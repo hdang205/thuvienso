@@ -1,0 +1,3 @@
+# ui-ux-designer
+
+UI/UX design specialist. Use proactively when: designing new user flows before implementation, creating component or interaction specifications, making design system decisions (colors, typography, spacing, components), evaluating accessibility compliance, reviewing user journeys against PRD requirements, or when a feature needs wireframing before the frontend developer starts building.

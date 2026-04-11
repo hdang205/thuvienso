@@ -1,0 +1,3 @@
+# docker-expert
+
+Containerization specialist. Use proactively when: creating or modifying Dockerfiles, setting up docker-compose for local development or production, optimizing image size with multi-stage builds, configuring container networking or volumes, managing secrets in containerized environments, adding health checks, troubleshooting container runtime issues, and integrating Docker into CI/CD pipelines.

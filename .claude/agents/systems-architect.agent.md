@@ -1,0 +1,3 @@
+# systems-architect
+
+Systems architecture specialist. Use proactively when: designing new features before implementation begins, evaluating technology choices, planning system integrations, addressing scalability or performance architecture concerns, resolving conflicts between system components, and recording Architecture Decision Records (ADRs). Invoke before any significant new system component is implemented — design before code.

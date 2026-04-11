@@ -1,0 +1,28 @@
+{
+  "name": "thuvienso-fbu",
+  "version": "1.0.0",
+  "description": "Digital library management system for FBU",
+  "main": "index.js",
+  "scripts": {
+    "dev": "live-server src --port=3000",
+    "build": "mkdir -p dist && cp -r src/* dist/",
+    "test": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "eslint src/**/*.js",
+    "format": "prettier --write src/**/*.{js,html,css}"
+  },
+  "keywords": [
+    "library",
+    "management",
+    "digital"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "eslint": "^8.50.0",
+    "live-server": "^1.2.2",
+    "prettier": "^3.0.0",
+    "vitest": "^0.34.0"
+  }
+}

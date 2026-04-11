@@ -1,0 +1,3 @@
+# copywriter-seo
+
+Copywriter and SEO specialist. Use proactively when: writing or refining landing page copy, marketing content, or product descriptions; defining brand voice and tone; crafting CTAs; planning keyword strategy or content clusters; optimising on-page SEO (title tags, meta descriptions, heading hierarchy, URL slugs); producing technical SEO specifications (structured data, canonical URLs, hreflang, sitemaps); or reviewing any written content for conversion and search performance.

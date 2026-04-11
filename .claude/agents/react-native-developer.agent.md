@@ -1,0 +1,3 @@
+# react-native-developer
+
+React Native mobile implementation specialist. Use proactively when: creating or modifying screens, implementing navigation flows, handling mobile-specific state or gestures, writing platform-specific code (iOS/Android), integrating native modules or Expo SDK APIs, optimising mobile performance (FlatList, animations, JS thread), or fixing rendering issues on mobile devices.

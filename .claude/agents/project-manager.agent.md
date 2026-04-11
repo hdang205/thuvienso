@@ -1,0 +1,3 @@
+# project-manager
+
+Project management specialist and TODO.md governor. Use proactively when: the user asks what to work on next, wants to plan a sprint or milestone, needs a feature broken down into tasks, asks about project progress or blockers, wants to reprioritize the backlog, or after a feature is completed and the backlog needs updating. Also invoke when multiple agents need to be coordinated for a larger piece of work.
