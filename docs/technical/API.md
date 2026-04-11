@@ -9,29 +9,262 @@ Read by: @frontend-developer (to know what endpoints to call and their contracts
 
 # API Reference
 
-> **Base URL**: `[https://api.example.com/v1]` (production) · `[http://localhost:3000/api]` (local)
-> **Authentication**: Bearer token in `Authorization` header, or session cookie
+> **Base URL**: `http://localhost:8000/api` (development) · `https://api.thuvienso-fbu.com/api` (production)
+> **Authentication**: Currently open (no auth required for development)
 > **Content-Type**: `application/json` for all requests and responses
-> **Last updated**: [YYYY-MM-DD]
+> **Last updated**: 2026-04-11
 
 ---
 
-## Authentication
+## Books API
 
-### How to Authenticate
+### List Books
 
-[Describe the authentication mechanism — e.g.:]
-
-Include the session token in every request:
 ```
-Authorization: Bearer <token>
+GET /api/books/
 ```
 
-Tokens are obtained via the login endpoint and expire after [30 days / X hours].
+**Query Parameters:**
 
-### Obtaining a Token
+- `search` - Search in title, author, ISBN, category
+- `category` - Filter by category
+- `author` - Filter by author
+- `ordering` - Order by: title, author, created_at
 
-See `POST /auth/login` below.
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Python Programming",
+    "author": "John Smith",
+    "isbn": "9780123456789",
+    "category": "Programming",
+    "description": "Learn Python programming",
+    "total_quantity": 5,
+    "available_quantity": 5,
+    "published_date": "2023-01-01",
+    "created_at": "2026-04-11T10:30:00Z",
+    "updated_at": "2026-04-11T10:30:00Z"
+  }
+]
+```
+
+### Create Book
+
+```
+POST /api/books/
+```
+
+**Request Body:**
+
+```json
+{
+  "title": "New Book",
+  "author": "Author Name",
+  "isbn": "9780123456789",
+  "category": "Fiction",
+  "description": "Book description",
+  "total_quantity": 1
+}
+```
+
+### Get Book Details
+
+```
+GET /api/books/{id}/
+```
+
+### Update Book
+
+```
+PUT /api/books/{id}/
+```
+
+### Delete Book
+
+```
+DELETE /api/books/{id}/
+```
+
+### Borrow Book
+
+```
+POST /api/books/{id}/borrow/
+```
+
+**Request Body:**
+
+```json
+{
+  "user_id": 1,
+  "due_date": "2026-04-25"
+}
+```
+
+---
+
+## Users API
+
+### List Users
+
+```
+GET /api/users/
+```
+
+**Query Parameters:**
+
+- `search` - Search in username, email, name
+- `role` - Filter by role (student/librarian)
+- `ordering` - Order by: date_joined, username
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "username": "student1",
+    "email": "student1@example.com",
+    "first_name": "Nguyen",
+    "last_name": "Van A",
+    "role": "student",
+    "student_id": "2024001",
+    "phone": null,
+    "date_joined": "2026-04-11T10:30:00Z"
+  }
+]
+```
+
+### Create User
+
+```
+POST /api/users/
+```
+
+### Get User Details
+
+```
+GET /api/users/{id}/
+```
+
+### Update User
+
+```
+PUT /api/users/{id}/
+```
+
+### Delete User
+
+```
+DELETE /api/users/{id}/
+```
+
+---
+
+## Loans API
+
+### List Loans
+
+```
+GET /api/loans/
+```
+
+**Query Parameters:**
+
+- `status` - Filter by status (borrowed/returned/overdue)
+- `user` - Filter by user ID
+- `book` - Filter by book ID
+- `ordering` - Order by: loan_date, due_date
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "user": {
+      "id": 1,
+      "username": "student1",
+      "email": "student1@example.com",
+      "first_name": "Nguyen",
+      "last_name": "Van A",
+      "role": "student",
+      "student_id": "2024001",
+      "phone": null,
+      "date_joined": "2026-04-11T10:30:00Z"
+    },
+    "book": {
+      "id": 1,
+      "title": "Python Programming",
+      "author": "John Smith",
+      "isbn": "9780123456789",
+      "category": "Programming",
+      "description": "Learn Python programming",
+      "total_quantity": 5,
+      "available_quantity": 4,
+      "published_date": "2023-01-01",
+      "created_at": "2026-04-11T10:30:00Z",
+      "updated_at": "2026-04-11T10:30:00Z"
+    },
+    "loan_date": "2026-04-11T10:35:00Z",
+    "due_date": "2026-04-25T00:00:00Z",
+    "return_date": null,
+    "status": "borrowed",
+    "notes": ""
+  }
+]
+```
+
+### Create Loan
+
+```
+POST /api/loans/
+```
+
+**Request Body:**
+
+```json
+{
+  "user_id": 1,
+  "book_id": 1,
+  "due_date": "2026-04-25",
+  "notes": "Optional notes"
+}
+```
+
+### Get Loan Details
+
+```
+GET /api/loans/{id}/
+```
+
+### Update Loan
+
+```
+PUT /api/loans/{id}/
+```
+
+### Delete Loan
+
+```
+DELETE /api/loans/{id}/
+```
+
+### Return Book
+
+```
+POST /api/loans/{id}/return_book/
+```
+
+**Request Body:**
+
+```json
+{
+  "return_date": "2026-04-15"
+}
+```
 
 ---
 
@@ -41,15 +274,21 @@ All error responses follow this structure:
 
 ```json
 {
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Human-readable description",
-    "details": [
-      { "field": "email", "message": "Invalid email format" }
-    ]
-  }
+  "error": "Human-readable error message"
 }
 ```
+
+Or for validation errors:
+
+```json
+{
+  "field_name": ["Error message 1", "Error message 2"]
+}
+```
+
+}
+
+````
 
 **Common error codes**:
 | HTTP Status | Code | Meaning |
@@ -93,9 +332,10 @@ All error responses follow this structure:
   "password": "string — minimum 8 characters",
   "name": "string — display name"
 }
-```
+````
 
 **Response 201**:
+
 ```json
 {
   "user": {
@@ -117,6 +357,7 @@ All error responses follow this structure:
 **Description**: Authenticate with email and password. Returns a session token.
 
 **Request body**:
+
 ```json
 {
   "email": "string",
@@ -125,6 +366,7 @@ All error responses follow this structure:
 ```
 
 **Response 200**:
+
 ```json
 {
   "token": "string — JWT or session token",
@@ -158,6 +400,7 @@ All error responses follow this structure:
 **Description**: Send a password reset email to the specified address.
 
 **Request body**:
+
 ```json
 {
   "email": "string"
@@ -165,6 +408,7 @@ All error responses follow this structure:
 ```
 
 **Response 200**: Always returns 200 to prevent email enumeration.
+
 ```json
 {
   "message": "If an account exists, a reset email has been sent."
@@ -181,6 +425,7 @@ All error responses follow this structure:
 **Description**: Return the authenticated user's profile.
 
 **Response 200**:
+
 ```json
 {
   "id": "uuid",
@@ -200,6 +445,7 @@ All error responses follow this structure:
 **Description**: Update the authenticated user's profile fields.
 
 **Request body** (all fields optional):
+
 ```json
 {
   "name": "string"
@@ -218,6 +464,6 @@ All error responses follow this structure:
 
 ## Changelog
 
-| Date | Change |
-|------|--------|
+| Date         | Change                                  |
+| ------------ | --------------------------------------- |
 | [YYYY-MM-DD] | Initial API definition — auth endpoints |
