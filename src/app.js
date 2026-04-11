@@ -6,21 +6,185 @@ const API_BASE = 'http://localhost:8000/api';
 let books = [];
 let users = [];
 let loans = [];
+let currentUser = null;
+let accessToken = null;
+let refreshToken = null;
 
 // Load data on page load
 document.addEventListener('DOMContentLoaded', function () {
-  loadBooks();
-  loadUsers();
-  loadLoans();
+  initializeApp();
+});
+
+// Initialize app
+function initializeApp() {
+  loadTokensFromStorage();
+  updateAuthUI();
+
+  if (accessToken) {
+    loadData();
+  }
 
   // Add event listeners
+  setupAuthEventListeners();
+  setupDataEventListeners();
+}
+
+// Authentication functions
+function setupAuthEventListeners() {
+  document.getElementById('login-btn').addEventListener('click', showLoginForm);
+  document.getElementById('register-btn').addEventListener('click', showRegisterForm);
+  document.getElementById('logout-btn').addEventListener('click', logout);
+
+  document.getElementById('login-form').addEventListener('submit', handleLogin);
+  document.getElementById('register-form').addEventListener('submit', handleRegister);
+}
+
+function setupDataEventListeners() {
   document
     .getElementById('add-book-btn')
     .addEventListener('click', showAddBookForm);
-  document
-    .getElementById('search-books')
-    .addEventListener('input', filterBooks);
-});
+  document.getElementById('search-books').addEventListener('input', filterBooks);
+}
+
+function loadTokensFromStorage() {
+  accessToken = localStorage.getItem('accessToken');
+  refreshToken = localStorage.getItem('refreshToken');
+  const userData = localStorage.getItem('currentUser');
+  if (userData) {
+    currentUser = JSON.parse(userData);
+  }
+}
+
+function saveTokensToStorage(access, refresh, user) {
+  accessToken = access;
+  refreshToken = refresh;
+  currentUser = user;
+  localStorage.setItem('accessToken', access);
+  localStorage.setItem('refreshToken', refresh);
+  localStorage.setItem('currentUser', JSON.stringify(user));
+}
+
+function clearTokensFromStorage() {
+  accessToken = null;
+  refreshToken = null;
+  currentUser = null;
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('currentUser');
+}
+
+function updateAuthUI() {
+  const authSection = document.getElementById('auth-section');
+  const navLinks = document.getElementById('nav-links');
+  const authForms = document.getElementById('auth-forms');
+  const userInfo = document.getElementById('user-info');
+  const loginBtn = document.getElementById('login-btn');
+  const registerBtn = document.getElementById('register-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  if (currentUser && accessToken) {
+    // User is logged in
+    userInfo.textContent = `Xin chào, ${currentUser.first_name} ${currentUser.last_name} (${currentUser.role === 'librarian' ? 'Thủ thư' : 'Sinh viên'})`;
+    loginBtn.style.display = 'none';
+    registerBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+    navLinks.style.display = 'block';
+    authForms.style.display = 'none';
+
+    // Show main sections
+    document.getElementById('books').style.display = 'block';
+    document.getElementById('users').style.display = 'block';
+    document.getElementById('loans').style.display = 'block';
+  } else {
+    // User is not logged in
+    userInfo.textContent = '';
+    loginBtn.style.display = 'inline-block';
+    registerBtn.style.display = 'inline-block';
+    logoutBtn.style.display = 'none';
+    navLinks.style.display = 'none';
+    authForms.style.display = 'block';
+
+    // Hide main sections
+    document.getElementById('books').style.display = 'none';
+    document.getElementById('users').style.display = 'none';
+    document.getElementById('loans').style.display = 'none';
+  }
+}
+
+function showLoginForm() {
+  document.getElementById('login-form-container').style.display = 'block';
+  document.getElementById('register-form-container').style.display = 'none';
+}
+
+function showRegisterForm() {
+  document.getElementById('login-form-container').style.display = 'none';
+  document.getElementById('register-form-container').style.display = 'block';
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+
+  const result = await apiRequest('/auth/login/', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (result) {
+    saveTokensToStorage(result.access, result.refresh, result.user);
+    updateAuthUI();
+    loadData();
+    alert('Đăng nhập thành công!');
+  }
+}
+
+async function handleRegister(event) {
+  event.preventDefault();
+
+  const data = {
+    username: document.getElementById('reg-username').value,
+    email: document.getElementById('reg-email').value,
+    password: document.getElementById('reg-password').value,
+    password_confirm: document.getElementById('reg-password-confirm').value,
+    first_name: document.getElementById('reg-first-name').value,
+    last_name: document.getElementById('reg-last-name').value,
+    role: document.getElementById('reg-role').value,
+  };
+
+  const result = await apiRequest('/auth/register/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+  if (result) {
+    saveTokensToStorage(result.access, result.refresh, result.user);
+    updateAuthUI();
+    loadData();
+    alert('Đăng ký thành công!');
+  }
+}
+
+async function logout() {
+  if (refreshToken) {
+    await apiRequest('/auth/logout/', {
+      method: 'POST',
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+  }
+
+  clearTokensFromStorage();
+  updateAuthUI();
+  alert('Đăng xuất thành công!');
+}
+
+// Load data after authentication
+function loadData() {
+  loadBooks();
+  loadUsers();
+  loadLoans();
+}
 
 // API helper functions
 async function apiRequest(endpoint, options = {}) {
@@ -31,6 +195,11 @@ async function apiRequest(endpoint, options = {}) {
     },
     ...options,
   };
+
+  // Add authorization header if token exists
+  if (accessToken) {
+    config.headers['Authorization'] = `Bearer ${accessToken}`;
+  }
 
   try {
     const response = await fetch(url, config);
@@ -319,18 +488,4 @@ function displayLoans(loansToShow) {
         `;
     loansList.appendChild(loanDiv);
   });
-}
-
-// Load users
-async function loadUsers() {
-  // TODO: Implement users API
-  const usersList = document.getElementById('users-list');
-  usersList.innerHTML = '<h3>Danh sách người dùng</h3><p>Chưa triển khai</p>';
-}
-
-// Load loans
-async function loadLoans() {
-  // TODO: Implement loans API
-  const loansList = document.getElementById('loans-list');
-  loansList.innerHTML = '<h3>Danh sách mượn trả</h3><p>Chưa triển khai</p>';
 }

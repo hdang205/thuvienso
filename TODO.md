@@ -7,13 +7,11 @@
 
 ## In Progress
 
-- [ ] #004 — Create frontend interface for book management [area: frontend] → [.tasks/004-frontend-books.md](.tasks/004-frontend-books.md)
+- [ ] #005 — Implement user authentication and management [area: backend] → [.tasks/005-user-auth.md](.tasks/005-user-auth.md)
 
 ---
 
 ## Up Next (prioritized)
-
-- [ ] #005 — Implement user authentication and management [area: backend] → [.tasks/005-user-auth.md](.tasks/005-user-auth.md)
 
 ---
 
@@ -32,6 +30,7 @@
 - [x] #001 — Set up project dependencies and basic structure [area: setup] → [.tasks/001-project-setup.md](.tasks/001-project-setup.md)
 - [x] #002 — Design MySQL database schema for books, users, and loans [area: database] → [.tasks/002-database-schema.md](.tasks/002-database-schema.md)
 - [x] #003 — Implement backend API with Django for CRUD operations [area: backend] → [.tasks/003-backend-api.md](.tasks/003-backend-api.md)
+- [x] #004 — Create frontend interface for book management [area: frontend] → [.tasks/004-frontend-books.md](.tasks/004-frontend-books.md)
 
 ---
 

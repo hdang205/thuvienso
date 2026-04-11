@@ -9,26 +9,80 @@
   <body>
     <header>
       <h1>Thư viện số FBU</h1>
-      <nav>
-        <a href="#books">Sách</a>
-        <a href="#users">Người dùng</a>
-        <a href="#loans">Mượn trả</a>
+      <nav id="main-nav">
+        <div id="auth-section">
+          <span id="user-info"></span>
+          <button id="login-btn">Đăng nhập</button>
+          <button id="register-btn">Đăng ký</button>
+          <button id="logout-btn" style="display: none;">Đăng xuất</button>
+        </div>
+        <div id="nav-links" style="display: none;">
+          <a href="#books">Sách</a>
+          <a href="#users">Người dùng</a>
+          <a href="#loans">Mượn trả</a>
+        </div>
       </nav>
     </header>
 
     <main>
-      <section id="books">
+      <section id="auth-forms" style="display: none;">
+        <div id="login-form-container">
+          <h2>Đăng nhập</h2>
+          <form id="login-form">
+            <label for="login-username">Tên đăng nhập:</label>
+            <input type="text" id="login-username" required>
+
+            <label for="login-password">Mật khẩu:</label>
+            <input type="password" id="login-password" required>
+
+            <button type="submit">Đăng nhập</button>
+          </form>
+        </div>
+
+        <div id="register-form-container" style="display: none;">
+          <h2>Đăng ký</h2>
+          <form id="register-form">
+            <label for="reg-username">Tên đăng nhập:</label>
+            <input type="text" id="reg-username" required>
+
+            <label for="reg-email">Email:</label>
+            <input type="email" id="reg-email" required>
+
+            <label for="reg-password">Mật khẩu:</label>
+            <input type="password" id="reg-password" required>
+
+            <label for="reg-password-confirm">Xác nhận mật khẩu:</label>
+            <input type="password" id="reg-password-confirm" required>
+
+            <label for="reg-first-name">Họ:</label>
+            <input type="text" id="reg-first-name" required>
+
+            <label for="reg-last-name">Tên:</label>
+            <input type="text" id="reg-last-name" required>
+
+            <label for="reg-role">Vai trò:</label>
+            <select id="reg-role" required>
+              <option value="student">Sinh viên</option>
+              <option value="librarian">Thủ thư</option>
+            </select>
+
+            <button type="submit">Đăng ký</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="books" style="display: none;">
         <h2>Quản lý sách</h2>
         <div id="books-list"></div>
         <button id="add-book-btn">Thêm sách</button>
       </section>
 
-      <section id="users">
+      <section id="users" style="display: none;">
         <h2>Quản lý người dùng</h2>
         <div id="users-list"></div>
       </section>
 
-      <section id="loans">
+      <section id="loans" style="display: none;">
         <h2>Mượn trả sách</h2>
         <div id="loans-list"></div>
       </section>
