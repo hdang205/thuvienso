@@ -44,6 +44,9 @@ function setupDataEventListeners() {
     .getElementById('add-book-btn')
     .addEventListener('click', showAddBookForm);
   document.getElementById('search-books').addEventListener('input', filterBooks);
+  document
+    .getElementById('borrow-book-btn')
+    .addEventListener('click', showBorrowBookForm);
 }
 
 function loadTokensFromStorage() {
@@ -431,6 +434,105 @@ function closeModal() {
   if (modal) {
     modal.remove();
   }
+  const borrowModal = document.getElementById('borrow-form-modal');
+  if (borrowModal) {
+    borrowModal.remove();
+  }
+}
+
+// Show borrow book form
+function showBorrowBookForm() {
+  const formHtml = `
+        <div id="borrow-form-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3>Mượn sách</h3>
+                <form id="borrow-book-form">
+                    <label for="borrow-book-select">Chọn sách:</label>
+                    <select id="borrow-book-select" required>
+                        <option value="">-- Chọn sách --</option>
+                    </select>
+
+                    <label for="borrow-due-date">Hạn trả (tùy chọn):</label>
+                    <input type="date" id="borrow-due-date">
+
+                    <button type="submit">Mượn sách</button>
+                </form>
+            </div>
+        </div>
+    `;
+
+  document.body.insertAdjacentHTML('beforeend', formHtml);
+
+  // Populate book select with available books
+  populateAvailableBooks();
+
+  document
+    .getElementById('borrow-book-form')
+    .addEventListener('submit', handleBorrowBook);
+}
+
+// Populate available books in select
+async function populateAvailableBooks() {
+  const select = document.getElementById('borrow-book-select');
+
+  // Clear existing options except the first
+  while (select.options.length > 1) {
+    select.remove(1);
+  }
+
+  // Get available books
+  const books = await apiRequest('/books/');
+  if (books) {
+    books.forEach((book) => {
+      if (book.available_quantity > 0) {
+        const option = document.createElement('option');
+        option.value = book.id;
+        option.textContent = `${book.title} by ${book.author} (${book.available_quantity} còn lại)`;
+        select.appendChild(option);
+      }
+    });
+  }
+}
+
+// Handle borrow book form submission
+async function handleBorrowBook(event) {
+  event.preventDefault();
+
+  const bookId = document.getElementById('borrow-book-select').value;
+  const dueDate = document.getElementById('borrow-due-date').value;
+
+  const data = { book_id: parseInt(bookId) };
+  if (dueDate) {
+    data.due_date = dueDate;
+  }
+
+  const result = await apiRequest('/loans/borrow/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+  if (result) {
+    alert('Mượn sách thành công!');
+    closeModal();
+    loadLoans(); // Reload loans list
+    loadBooks(); // Reload books to update availability
+  }
+}
+
+// Return book
+async function returnBook(loanId) {
+  if (!confirm('Bạn có chắc muốn trả sách này?')) return;
+
+  const result = await apiRequest(`/loans/${loanId}/return_book/`, {
+    method: 'POST',
+  });
+
+  if (result) {
+    alert('Trả sách thành công!');
+    loadLoans();
+    loadBooks(); // Update book availability
+  }
 }
 
 // Load users
@@ -461,7 +563,15 @@ function displayUsers(usersToShow) {
 
 // Load loans
 async function loadLoans() {
-  const data = await apiRequest('/loans/');
+  let data;
+  if (currentUser && currentUser.role === 'student') {
+    // Students see only their loans
+    data = await apiRequest('/loans/my_loans/');
+  } else {
+    // Librarians see all loans
+    data = await apiRequest('/loans/');
+  }
+
   if (data) {
     loans = data;
     displayLoans(loans);
@@ -478,14 +588,34 @@ function displayLoans(loansToShow) {
     return;
   }
 
+  const loansContainer = document.createElement('div');
+  loansContainer.className = 'loans-container';
+
   loansToShow.forEach((loan) => {
-    const loanDiv = document.createElement('div');
-    loanDiv.innerHTML = `
-            <p><strong>${loan.book.title}</strong> - ${loan.user.username}</p>
-            <p>Trạng thái: ${loan.status} | Hạn trả: ${new Date(
-              loan.due_date
-            ).toLocaleDateString('vi-VN')}</p>
+    const loanCard = document.createElement('div');
+    loanCard.className = `loan-card ${loan.is_overdue ? 'overdue' : ''}`;
+
+    const statusText = loan.status === 'borrowed' ? 'Đang mượn' :
+                      loan.status === 'returned' ? 'Đã trả' : 'Quá hạn';
+
+    const dueDate = new Date(loan.due_date).toLocaleDateString('vi-VN');
+    const returnDate = loan.return_date ?
+                      new Date(loan.return_date).toLocaleDateString('vi-VN') : 'Chưa trả';
+
+    loanCard.innerHTML = `
+            <h4>${loan.book.title}</h4>
+            <p><strong>Người mượn:</strong> ${loan.user.first_name} ${loan.user.last_name}</p>
+            <p><strong>Ngày mượn:</strong> ${new Date(loan.loan_date).toLocaleDateString('vi-VN')}</p>
+            <p><strong>Hạn trả:</strong> ${dueDate}</p>
+            <p><strong>Ngày trả:</strong> ${returnDate}</p>
+            <p><strong>Trạng thái:</strong> <span class="status-${loan.status}">${statusText}</span></p>
+            ${loan.is_overdue ? '<p class="overdue-warning">⚠️ Quá hạn!</p>' : ''}
+            <div class="loan-actions">
+                ${loan.status === 'borrowed' ? `<button onclick="returnBook(${loan.id})">Trả sách</button>` : ''}
+            </div>
         `;
-    loansList.appendChild(loanDiv);
+    loansContainer.appendChild(loanCard);
   });
+
+  loansList.appendChild(loansContainer);
 }

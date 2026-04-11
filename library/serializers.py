@@ -58,24 +58,62 @@ class BookSerializer(serializers.ModelSerializer):
 class LoanSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     book = BookSerializer(read_only=True)
-    user_id = serializers.IntegerField(write_only=True)
-    book_id = serializers.IntegerField(write_only=True)
+    user_id = serializers.IntegerField(write_only=True, required=False)
+    book_id = serializers.IntegerField(write_only=True, required=False)
+    is_overdue = serializers.SerializerMethodField()
 
     class Meta:
         model = Loan
         fields = ['id', 'user', 'book', 'user_id', 'book_id', 'loan_date',
-                 'due_date', 'return_date', 'status', 'notes']
-        read_only_fields = ['loan_date']
+                 'due_date', 'return_date', 'status', 'notes', 'is_overdue']
+        read_only_fields = ['loan_date', 'return_date']
+
+    def get_is_overdue(self, obj):
+        """Check if loan is overdue"""
+        from django.utils import timezone
+        return obj.status == 'borrowed' and obj.due_date < timezone.now()
+
+    def validate(self, attrs):
+        # For creation, require book_id
+        if self.instance is None and 'book_id' not in attrs:
+            raise serializers.ValidationError({'book_id': 'This field is required for new loans'})
+
+        # Check book availability for new loans
+        if self.instance is None:
+            try:
+                book = Book.objects.get(id=attrs['book_id'])
+                if book.available_quantity <= 0:
+                    raise serializers.ValidationError({'book_id': 'Book is not available for loan'})
+            except Book.DoesNotExist:
+                raise serializers.ValidationError({'book_id': 'Book not found'})
+
+        return attrs
 
     def create(self, validated_data):
-        user_id = validated_data.pop('user_id')
+        user_id = validated_data.pop('user_id', None)
         book_id = validated_data.pop('book_id')
+
+        # Use current user if not specified (for student self-borrowing)
+        if not user_id:
+            user_id = self.context['request'].user.id
+
         user = User.objects.get(id=user_id)
         book = Book.objects.get(id=book_id)
 
-        # Check if book is available
-        if book.available_quantity <= 0:
-            raise serializers.ValidationError("Book is not available for loan")
+        # Check if user already has this book
+        existing_loan = Loan.objects.filter(
+            user=user,
+            book=book,
+            status='borrowed'
+        ).exists()
+
+        if existing_loan:
+            raise serializers.ValidationError('You already have this book borrowed')
 
         loan = Loan.objects.create(user=user, book=book, **validated_data)
+
+        # Update book availability
+        book.available_quantity -= 1
+        book.save()
+
         return loan

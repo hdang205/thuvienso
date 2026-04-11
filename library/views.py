@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.utils import timezone
 from .models import User, Book, Loan
 from .serializers import UserSerializer, UserRegistrationSerializer, UserLoginSerializer, BookSerializer, LoanSerializer
 
@@ -68,9 +69,84 @@ class LoanViewSet(viewsets.ModelViewSet):
     search_fields = ['user__username', 'book__title']
     ordering_fields = ['loan_date', 'due_date', 'return_date']
 
+    def get_queryset(self):
+        """Filter loans based on user role"""
+        user = self.request.user
+        if user.role == 'student':
+            # Students can only see their own loans
+            return Loan.objects.filter(user=user).select_related('user', 'book')
+        # Librarians can see all loans
+        return Loan.objects.select_related('user', 'book')
+
+    @action(detail=False, methods=['post'])
+    def borrow(self, request):
+        """Borrow a book"""
+        book_id = request.data.get('book_id')
+        due_date = request.data.get('due_date')
+
+        if not book_id:
+            return Response(
+                {'error': 'book_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            book = Book.objects.get(id=book_id)
+        except Book.DoesNotExist:
+            return Response(
+                {'error': 'Book not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Check if book is available
+        if book.available_quantity <= 0:
+            return Response(
+                {'error': 'Book is not available for loan'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if user already has this book borrowed
+        existing_loan = Loan.objects.filter(
+            user=request.user,
+            book=book,
+            status='borrowed'
+        ).exists()
+
+        if existing_loan:
+            return Response(
+                {'error': 'You already have this book borrowed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Set default due date if not provided (14 days from now)
+        from datetime import timedelta
+        if not due_date:
+            due_date = (request.data.get('loan_date') or timezone.now()) + timedelta(days=14)
+
+        loan = Loan.objects.create(
+            user=request.user,
+            book=book,
+            due_date=due_date
+        )
+
+        # Update book availability
+        book.available_quantity -= 1
+        book.save()
+
+        serializer = LoanSerializer(loan)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=['post'])
     def return_book(self, request, pk=None):
+        """Return a borrowed book"""
         loan = self.get_object()
+
+        # Check permissions - only borrower or librarian can return
+        if request.user.role != 'librarian' and loan.user != request.user:
+            return Response(
+                {'error': 'You can only return your own loans'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         if loan.status == 'returned':
             return Response(
@@ -79,10 +155,39 @@ class LoanViewSet(viewsets.ModelViewSet):
             )
 
         loan.status = 'returned'
-        loan.return_date = request.data.get('return_date')
+        loan.return_date = timezone.now()
         loan.save()
 
+        # Update book availability
+        loan.book.available_quantity += 1
+        loan.book.save()
+
         serializer = LoanSerializer(loan)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def my_loans(self, request):
+        """Get current user's loans"""
+        loans = Loan.objects.filter(user=request.user).select_related('user', 'book')
+        serializer = LoanSerializer(loans, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def overdue(self, request):
+        """Get overdue loans (librarian only)"""
+        if request.user.role != 'librarian':
+            return Response(
+                {'error': 'Only librarians can view overdue loans'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        from django.utils import timezone
+        overdue_loans = Loan.objects.filter(
+            status='borrowed',
+            due_date__lt=timezone.now()
+        ).select_related('user', 'book')
+
+        serializer = LoanSerializer(overdue_loans, many=True)
         return Response(serializer.data)
 
 
