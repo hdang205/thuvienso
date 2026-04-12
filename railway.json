@@ -1,0 +1,19 @@
+{
+  "$schema": "https://railway.app/json-schema/railway.json",
+  "build": {
+    "builder": "DOCKERFILE"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "python manage.py migrate && gunicorn thuvienso_backend.wsgi:application --bind 0.0.0.0:$PORT",
+    "healthchecks": {
+      "cpu": {
+        "percentage": 80
+      },
+      "memory": {
+        "percentage": 80
+      }
+    }
+  },
+  "plugins": ["postgres"]
+}

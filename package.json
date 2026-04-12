@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "live-server src --port=3000",
     "build": "mkdir -p dist && cp -r src/* dist/",
+    "deploy": "npm run build && git add dist -f && git commit -m 'build: update production build' && git push origin main",
     "test": "vitest",
     "test:e2e": "playwright test",
     "lint": "eslint src/**/*.js",

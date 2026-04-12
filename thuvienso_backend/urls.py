@@ -16,8 +16,34 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+from django.db import connection
+import json
+
+def health_check(request):
+    """
+    Endpoint for container orchestrators (Railway, Heroku, etc.) to check if the app is healthy.
+    Checks database connectivity and returns status.
+    """
+    try:
+        # Test database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        
+        return JsonResponse({
+            'status': 'ok',
+            'message': 'Digital Library API is healthy',
+            'database': 'connected'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e),
+            'database': 'disconnected'
+        }, status=503)
 
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('api/', include('library.urls')),
 ]

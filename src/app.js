@@ -1,6 +1,13 @@
 // Thư viện số FBU - Frontend JavaScript
 
-const API_BASE = 'http://localhost:8000/api';
+// Import configuration from config.js (in production, this will be auto-injected)
+// For development, API_BASE will be overridden by window.API_BASE if set
+let API_BASE = 'http://localhost:8000/api';
+
+// Try to load from config if available
+if (typeof window.API_BASE !== 'undefined') {
+  API_BASE = window.API_BASE;
+}
 
 // Global state
 let books = [];

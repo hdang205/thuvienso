@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
@@ -29,7 +30,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-z!lr*qd#dt@1ln99l&k9i%!k+(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
+# Allow hosts from environment, plus defaults for development
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+if os.getenv('ALLOWED_HOSTS'):
+    ALLOWED_HOSTS.extend(os.getenv('ALLOWED_HOSTS', '').split(','))
+if os.getenv('RAILWAY_DOMAIN'):
+    ALLOWED_HOSTS.append(os.getenv('RAILWAY_DOMAIN'))
 
 
 # Application definition
@@ -51,6 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files efficiently in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -82,25 +89,23 @@ WSGI_APPLICATION = 'thuvienso_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# Use PostgreSQL in production (via DATABASE_URL), SQLite in development
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
-
-# TODO: Switch to MySQL in production
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv('DB_NAME', 'thuvienso_fbu'),
-#         'USER': os.getenv('DB_USER', 'root'),
-#         'PASSWORD': os.getenv('DB_PASSWORD', ''),
-#         'HOST': os.getenv('DB_HOST', 'localhost'),
-#         'PORT': '3306',
-#     }
-# }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -134,19 +139,38 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
 # Custom user model
 AUTH_USER_MODEL = 'library.User'
 
-# CORS settings
+# CORS settings - allow frontend origins
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+if os.getenv('CORS_ALLOWED_ORIGINS'):
+    CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS', '').split(','))
+
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# Security settings for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_SECURITY_POLICY = {
+        "default-src": ("'self'",),
+    }
+
+# Static files for production
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # REST Framework settings
 REST_FRAMEWORK = {
