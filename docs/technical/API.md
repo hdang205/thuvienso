@@ -462,8 +462,77 @@ Or for validation errors:
 
 ---
 
+## Chat API
+
+### Get Book Recommendations
+
+```
+POST /api/chat/recommend/
+```
+
+**Auth required**: Yes (JWT token)
+
+**Description**: AI chatbot endpoint that provides book recommendations based on a user query. Searches across titles, authors, categories, and descriptions to find relevant books.
+
+**Request Body:**
+
+```json
+{
+  "query": "machine learning books"
+}
+```
+
+**Response 200:**
+
+```json
+{
+  "message": "Great! I found 3 book(s) matching your interest in 'machine learning'. Would you like to borrow any of these?",
+  "suggestions": [
+    {
+      "id": 1,
+      "title": "Machine Learning Basics",
+      "author": "Andrew Ng",
+      "category": "Technology",
+      "description": "An introduction to machine learning algorithms and applications...",
+      "available_quantity": 2
+    },
+    {
+      "id": 2,
+      "title": "Deep Learning",
+      "author": "Ian Goodfellow",
+      "category": "Technology",
+      "description": "Comprehensive guide to deep learning and neural networks...",
+      "available_quantity": 1
+    }
+  ]
+}
+```
+
+**Response 200 (No Results):**
+
+```json
+{
+  "message": "I couldn't find books matching \"quantum physics\". Try searching for different topics like: Fiction, Science, History, Technology, etc.",
+  "suggestions": []
+}
+```
+
+**Error codes**:
+- `401` - Not authenticated
+- `200` - Always returns 200 with empty suggestions if no books found
+
+**Notes**:
+- Query is case-insensitive
+- Searches across multiple fields (title, author, category, description)
+- Only returns books with available quantity > 0
+- Results limited to 5 books per query
+- Bot provides conversational feedback about results
+
+---
+
 ## Changelog
 
 | Date         | Change                                  |
 | ------------ | --------------------------------------- |
+| 2026-04-12   | Add Chat/Chatbox API endpoint           |
 | [YYYY-MM-DD] | Initial API definition — auth endpoints |

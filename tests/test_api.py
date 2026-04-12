@@ -195,3 +195,61 @@ class TestLoanAPI:
         response = client.get('/api/loans/overdue/')
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
+
+
+@pytest.mark.django_db
+class TestChatAPI:
+    def test_chat_recommend_requires_auth(self, api_client):
+        """Test that chat endpoint requires authentication"""
+        data = {'query': 'science books'}
+        response = api_client.post('/api/chat/recommend/', data)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_chat_recommend_empty_query(self, authenticated_client):
+        """Test chat with empty query"""
+        client, user = authenticated_client
+        data = {'query': ''}
+        response = client.post('/api/chat/recommend/', data)
+        assert response.status_code == status.HTTP_200_OK
+        assert 'message' in response.data
+        assert response.data['suggestions'] == []
+
+    def test_chat_recommend_with_results(self, authenticated_client, book_factory):
+        """Test chat recommendation with results"""
+        client, user = authenticated_client
+        # Create test books
+        book = book_factory.create(
+            title='Python Programming',
+            category='Technology',
+            available_quantity=2
+        )
+
+        data = {'query': 'python programming'}
+        response = client.post('/api/chat/recommend/', data)
+        assert response.status_code == status.HTTP_200_OK
+        assert 'message' in response.data
+        assert 'suggestions' in response.data
+        assert len(response.data['suggestions']) >= 1
+        assert response.data['suggestions'][0]['title'] == 'Python Programming'
+
+    def test_chat_recommend_by_category(self, authenticated_client, book_factory):
+        """Test chat recommendation by category"""
+        client, user = authenticated_client
+        # Create test books with different categories
+        book_fiction = book_factory.create(category='Fiction', available_quantity=1)
+        book_science = book_factory.create(category='Science', available_quantity=1)
+
+        data = {'query': 'fiction'}
+        response = client.post('/api/chat/recommend/', data)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['suggestions']) >= 1
+        assert response.data['suggestions'][0]['category'] == 'Fiction'
+
+    def test_chat_recommend_no_results(self, authenticated_client):
+        """Test chat recommendation with no results"""
+        client, user = authenticated_client
+        data = {'query': 'nonexistentbookquery123'}
+        response = client.post('/api/chat/recommend/', data)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['suggestions'] == []
+        assert 'couldn\'t find' in response.data['message'].lower()

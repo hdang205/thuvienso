@@ -17,4 +17,6 @@ urlpatterns = [
     path('auth/me/', views.me_view, name='auth_me'),
     path('auth/profile/', views.profile_view, name='auth_profile'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Chat/Chatbot endpoints
+    path('chat/recommend/', views.chat_recommend_view, name='chat_recommend'),
 ]

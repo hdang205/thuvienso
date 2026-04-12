@@ -249,6 +249,82 @@ def me_view(request):
     return Response(serializer.data)
 
 
+# Chat/Recommendation views
+def get_book_recommendations(query, limit=5):
+    """
+    Simple rule-based book recommendation engine.
+    Matches books by category, title, or author based on the query.
+    """
+    query_lower = query.lower()
+    
+    # Search by category
+    books = Book.objects.filter(
+        category__icontains=query_lower
+    ) | Book.objects.filter(
+        title__icontains=query_lower
+    ) | Book.objects.filter(
+        author__icontains=query_lower
+    ) | Book.objects.filter(
+        description__icontains=query_lower
+    )
+    
+    # Order by availability and relevance
+    books = books.filter(available_quantity__gt=0).order_by('-available_quantity')[:limit]
+    
+    return books
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def chat_recommend_view(request):
+    """
+    AI Chatbot recommendation endpoint.
+    Takes a user query and returns book recommendations.
+    
+    Request: { "query": "machine learning books" }
+    Response: { "suggestions": [...], "message": "..." }
+    """
+    query = request.data.get('query', '').strip()
+    
+    if not query:
+        return Response(
+            {
+                'suggestions': [],
+                'message': 'Please ask me about book recommendations! Try: "books about machine learning" or "fiction novels"'
+            }
+        )
+    
+    # Get recommendations
+    books = get_book_recommendations(query, limit=5)
+    
+    if not books:
+        return Response(
+            {
+                'suggestions': [],
+                'message': f'I couldn\'t find books matching "{query}". Try searching for different topics like: Fiction, Science, History, Technology, etc.'
+            }
+        )
+    
+    # Format response
+    suggestions = []
+    for book in books:
+        suggestions.append({
+            'id': book.id,
+            'title': book.title,
+            'author': book.author,
+            'category': book.category,
+            'description': book.description[:100] + '...' if book.description and len(book.description) > 100 else book.description,
+            'available_quantity': book.available_quantity,
+        })
+    
+    message = f"Great! I found {len(suggestions)} book(s) matching your interest in '{query}'. Would you like to borrow any of these?"
+    
+    return Response({
+        'suggestions': suggestions,
+        'message': message
+    })
+
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def profile_view(request):

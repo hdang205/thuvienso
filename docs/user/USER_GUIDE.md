@@ -77,6 +77,51 @@ An account with this email already exists. Try logging in instead, or use the "F
 
 ---
 
+### Book Recommendations Chatbot
+
+The Book Recommendations chatbot helps you discover books that match your interests. You can ask it in natural language what kind of books you're looking for, and it will suggest relevant titles from our library.
+
+#### How to Use the Chatbot
+
+1. Look for the **chat bubble icon** in the bottom-right corner of the screen
+2. Click the icon to open the chat window
+3. Type your question or preference (e.g., "science fiction novels", "books about Python programming")
+4. Press **Enter** or click the **Send** button
+5. The bot will return book suggestions with titles, authors, and availability
+
+**Examples of queries you can try:**
+- "fiction novels"
+- "science books"
+- "technology programming"
+- "history of World War 2"
+- "machine learning"
+
+#### Book Suggestion Features
+
+Each book suggestion shows:
+- **Title** — The exact name of the book
+- **Author** — Who wrote the book
+- **Category** — The genre or subject area
+- **Description** — A brief summary of what the book is about
+- **Available Copies** — How many copies are currently available to borrow
+
+#### Tips for Better Results
+
+- Use **specific keywords** — Instead of "good books", try "science fiction"
+- **Combine topics** — "fiction about technology" or "history of science"
+- **Ask by subject** — The bot searches across titles, authors, and descriptions
+- **Check availability** — The bot only suggests books that are in stock
+
+#### Common Issues
+
+**"I don't see any results"**
+The bot only returns books that match your query and are currently available. Try different keywords or ask about a more general topic.
+
+**"The chat window won't open"**
+Make sure you're logged in to your account. The chatbot requires authentication to provide recommendations.
+
+---
+
 ## Account Settings
 
 ### Updating Your Profile
