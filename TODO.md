@@ -7,18 +7,17 @@
 
 ## In Progress
 
-- [ ] #008 — Set up testing infrastructure [area: qa] → [.tasks/008-testing-setup.md](.tasks/008-testing-setup.md)
+- [ ] #009 — Deploy to GitHub Pages [area: infra] → [.tasks/009-deployment.md](.tasks/009-deployment.md)
 
 ---
 
 ## Up Next (prioritized)
 
+- [ ] #007 — Integrate AI chatbox for book recommendations [area: frontend] → [.tasks/007-ai-chatbox.md](.tasks/007-ai-chatbox.md)
+
 ---
 
 ## Backlog
-
-- [ ] #007 — Integrate AI chatbox for book recommendations [area: frontend] → [.tasks/007-ai-chatbox.md](.tasks/007-ai-chatbox.md)
-- [ ] #009 — Deploy to GitHub Pages [area: infra] → [.tasks/009-deployment.md](.tasks/009-deployment.md)
 
 ---
 
@@ -31,10 +30,7 @@
 - [x] #004 — Create frontend interface for book management [area: frontend] → [.tasks/004-frontend-books.md](.tasks/004-frontend-books.md)
 - [x] #005 — Implement user authentication and management [area: backend] → [.tasks/005-user-auth.md](.tasks/005-user-auth.md)
 - [x] #006 — Add loan/borrow functionality [area: backend] → [.tasks/006-loan-system.md](.tasks/006-loan-system.md)
-- [x] #003 — Implement backend API with Django for CRUD operations [area: backend] → [.tasks/003-backend-api.md](.tasks/003-backend-api.md)
-- [x] #004 — Create frontend interface for book management [area: frontend] → [.tasks/004-frontend-books.md](.tasks/004-frontend-books.md)
-- [x] #005 — Implement user authentication and management [area: backend] → [.tasks/005-user-auth.md](.tasks/005-user-auth.md)
-- [x] #006 — Add loan/borrow functionality [area: backend] → [.tasks/006-loan-system.md](.tasks/006-loan-system.md)
+- [x] #008 — Set up testing infrastructure [area: qa] → [.tasks/008-testing-setup.md](.tasks/008-testing-setup.md)
 
 ---
 
