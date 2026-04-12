@@ -32,18 +32,24 @@ function initializeApp() {
 // Authentication functions
 function setupAuthEventListeners() {
   document.getElementById('login-btn').addEventListener('click', showLoginForm);
-  document.getElementById('register-btn').addEventListener('click', showRegisterForm);
+  document
+    .getElementById('register-btn')
+    .addEventListener('click', showRegisterForm);
   document.getElementById('logout-btn').addEventListener('click', logout);
 
   document.getElementById('login-form').addEventListener('submit', handleLogin);
-  document.getElementById('register-form').addEventListener('submit', handleRegister);
+  document
+    .getElementById('register-form')
+    .addEventListener('submit', handleRegister);
 }
 
 function setupDataEventListeners() {
   document
     .getElementById('add-book-btn')
     .addEventListener('click', showAddBookForm);
-  document.getElementById('search-books').addEventListener('input', filterBooks);
+  document
+    .getElementById('search-books')
+    .addEventListener('input', filterBooks);
   document
     .getElementById('borrow-book-btn')
     .addEventListener('click', showBorrowBookForm);
@@ -595,12 +601,17 @@ function displayLoans(loansToShow) {
     const loanCard = document.createElement('div');
     loanCard.className = `loan-card ${loan.is_overdue ? 'overdue' : ''}`;
 
-    const statusText = loan.status === 'borrowed' ? 'Đang mượn' :
-                      loan.status === 'returned' ? 'Đã trả' : 'Quá hạn';
+    const statusText =
+      loan.status === 'borrowed'
+        ? 'Đang mượn'
+        : loan.status === 'returned'
+          ? 'Đã trả'
+          : 'Quá hạn';
 
     const dueDate = new Date(loan.due_date).toLocaleDateString('vi-VN');
-    const returnDate = loan.return_date ?
-                      new Date(loan.return_date).toLocaleDateString('vi-VN') : 'Chưa trả';
+    const returnDate = loan.return_date
+      ? new Date(loan.return_date).toLocaleDateString('vi-VN')
+      : 'Chưa trả';
 
     loanCard.innerHTML = `
             <h4>${loan.book.title}</h4>

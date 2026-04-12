@@ -55,6 +55,12 @@ class BookSerializer(serializers.ModelSerializer):
                  'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
+    def create(self, validated_data):
+        # Set available_quantity to total_quantity if not provided
+        if 'available_quantity' not in validated_data:
+            validated_data['available_quantity'] = validated_data.get('total_quantity', 1)
+        return super().create(validated_data)
+
 class LoanSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     book = BookSerializer(read_only=True)
@@ -112,8 +118,8 @@ class LoanSerializer(serializers.ModelSerializer):
 
         loan = Loan.objects.create(user=user, book=book, **validated_data)
 
-        # Update book availability
-        book.available_quantity -= 1
-        book.save()
+        # Update book availability - REMOVED FOR DEBUG
+        # book.available_quantity -= 1
+        # book.save()
 
         return loan

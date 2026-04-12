@@ -91,7 +91,7 @@ class LoanViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            book = Book.objects.get(id=book_id)
+            book = Book.objects.select_for_update().get(id=book_id)
         except Book.DoesNotExist:
             return Response(
                 {'error': 'Book not found'},

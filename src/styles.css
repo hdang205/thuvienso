@@ -52,7 +52,7 @@ button:hover {
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
@@ -87,14 +87,16 @@ button:hover {
   font-weight: bold;
 }
 
-.modal input, .modal select, .modal textarea {
+.modal input,
+.modal select,
+.modal textarea {
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
 }
 
-.modal button[type="submit"] {
+.modal button[type='submit'] {
   background: #28a745;
   color: white;
   border: none;
@@ -104,7 +106,7 @@ button:hover {
   font-size: 1rem;
 }
 
-.modal button[type="submit"]:hover {
+.modal button[type='submit']:hover {
   background: #218838;
 }
 
@@ -121,7 +123,7 @@ button:hover {
   border-radius: 8px;
   padding: 1rem;
   background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .book-card h4 {
@@ -174,7 +176,7 @@ button:hover {
   border-radius: 8px;
   padding: 1rem;
   background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .loan-card.overdue {
