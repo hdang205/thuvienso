@@ -9,25 +9,25 @@ from library.models import User, Book, Loan
 
 def create_sample_data():
     # Create sample users
-    if not User.objects.filter(username='student1').exists():
-        User.objects.create_user(
-            username='student1',
-            email='student1@example.com',
+    if not User.objects.filter(username='admin1').exists():
+        User.objects.create_superuser(
+            username='admin1',
+            email='admin1@example.com',
             password='password123',
             first_name='Nguyen',
             last_name='Van A',
-            role='student',
-            student_id='2024001'
+            role='librarian'
         )
 
-    if not User.objects.filter(username='librarian1').exists():
+    if not User.objects.filter(username='user1').exists():
         User.objects.create_user(
-            username='librarian1',
-            email='librarian1@example.com',
+            username='user1',
+            email='user1@example.com',
             password='password123',
             first_name='Tran',
             last_name='Thi B',
-            role='librarian'
+            role='student',
+            student_id='2024001'
         )
 
     # Create sample books
