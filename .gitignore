@@ -68,3 +68,8 @@ Desktop.ini
 .cache/
 tmp/
 temp/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
