@@ -76,8 +76,24 @@ class LoanSerializer(serializers.ModelSerializer):
 
     def get_is_overdue(self, obj):
         """Check if loan is overdue"""
+        if obj.status != 'borrowed' or not obj.due_date:
+            return False
         from django.utils import timezone
-        return obj.status == 'borrowed' and obj.due_date < timezone.now()
+        from django.utils.dateparse import parse_datetime, parse_date
+        import datetime
+        due_date = obj.due_date
+        if isinstance(due_date, str):
+            parsed = parse_datetime(due_date)
+            if parsed is None:
+                d = parse_date(due_date)
+                if d:
+                    parsed = datetime.datetime.combine(d, datetime.time.max)
+            due_date = parsed
+        if due_date is None:
+            return False
+        if timezone.is_naive(due_date):
+            due_date = timezone.make_aware(due_date)
+        return due_date < timezone.now()
 
     def validate(self, attrs):
         # For creation, require book_id

@@ -52,10 +52,23 @@ class BookViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        from datetime import timedelta
+        from django.utils.dateparse import parse_datetime, parse_date
+        import datetime
+        parsed_due = parse_datetime(due_date) if isinstance(due_date, str) else due_date
+        if parsed_due is None and isinstance(due_date, str):
+            d = parse_date(due_date)
+            if d:
+                parsed_due = datetime.datetime.combine(d, datetime.time.max)
+        if parsed_due and timezone.is_naive(parsed_due):
+            parsed_due = timezone.make_aware(parsed_due)
+        if not parsed_due:
+            parsed_due = timezone.now() + timedelta(days=14)
+
         loan = Loan.objects.create(
             user=user,
             book=book,
-            due_date=due_date
+            due_date=parsed_due
         )
 
         serializer = LoanSerializer(loan)
@@ -120,18 +133,25 @@ class LoanViewSet(viewsets.ModelViewSet):
 
         # Set default due date if not provided (14 days from now)
         from datetime import timedelta
-        if not due_date:
-            due_date = (request.data.get('loan_date') or timezone.now()) + timedelta(days=14)
+        from django.utils.dateparse import parse_datetime, parse_date
+        import datetime
+        parsed_due = None
+        if due_date:
+            parsed_due = parse_datetime(due_date) if isinstance(due_date, str) else due_date
+            if parsed_due is None and isinstance(due_date, str):
+                d = parse_date(due_date)
+                if d:
+                    parsed_due = datetime.datetime.combine(d, datetime.time.max)
+            if parsed_due and timezone.is_naive(parsed_due):
+                parsed_due = timezone.make_aware(parsed_due)
+        if not parsed_due:
+            parsed_due = (request.data.get('loan_date') or timezone.now()) + timedelta(days=14)
 
         loan = Loan.objects.create(
             user=request.user,
             book=book,
-            due_date=due_date
+            due_date=parsed_due
         )
-
-        # Update book availability
-        book.available_quantity -= 1
-        book.save()
 
         serializer = LoanSerializer(loan)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -157,10 +177,6 @@ class LoanViewSet(viewsets.ModelViewSet):
         loan.status = 'returned'
         loan.return_date = timezone.now()
         loan.save()
-
-        # Update book availability
-        loan.book.available_quantity += 1
-        loan.book.save()
 
         serializer = LoanSerializer(loan)
         return Response(serializer.data)

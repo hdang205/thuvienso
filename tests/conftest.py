@@ -6,7 +6,7 @@ from django.conf import settings
 if not settings.configured:
     settings.configure(
         DEBUG=True,
-        SECRET_KEY='test-secret-key',
+        SECRET_KEY='django-insecure-test-secret-key-for-testing-only-32bytes',
         DATABASES={
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',

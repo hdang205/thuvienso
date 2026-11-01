@@ -1,41 +1,93 @@
-# Environment
+# === Environment & Secrets ===
 .env
 .env.*
 !.env.example
 !.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+secrets/
+credentials/
+private/
 
-# Dependencies
+# === Databases & Dumps (Local Data Protection) ===
+*.sqlite3
+*.sqlite
+*.db
+*.db-journal
+*.bak
+*.dump
+*.sql
+db.sqlite3
+
+# === Python Artifacts & Caches ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# === Python Virtual Environments ===
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# === Testing & Coverage ===
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+.pytest_cache/
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# === Django Static & Media ===
+staticfiles/
+media/
+
+# === Node & Frontend Dependencies ===
 node_modules/
 .pnp
 .pnp.js
 
-# Build outputs
-dist/
-build/
+# === Build Outputs ===
 out/
 .next/
 .nuxt/
 .output/
 *.tsbuildinfo
 
-# Package manager locks (keep only one — remove the ones you don't use)
-# yarn.lock
-# pnpm-lock.yaml
-
-# Testing
-coverage/
-.nyc_output/
-playwright-report/
-test-results/
-
-# Logs
+# === Logs & Runtime ===
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.claude/agent-log.txt
 
-# OS
+# === OS Generated Files ===
 .DS_Store
 .DS_Store?
 ._*
@@ -43,8 +95,8 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# IDE & editors
-.vscode/
+# === IDE & Editors ===
+.vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json.example
 .idea/
@@ -53,18 +105,6 @@ Desktop.ini
 *~
 .project
 .classpath
-.c9/
-*.launch
 .settings/
 *.sublime-workspace
-
-# Cursor
 .cursor/
-
-# Misc
-*.pem
-.vercel
-.turbo
-.cache/
-tmp/
-temp/

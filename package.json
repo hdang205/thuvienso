@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "live-server src --port=3000",
-    "build": "mkdir -p dist && cp -r src/* dist/",
+    "build": "node scripts/build.js",
     "deploy": "npm run build && git add dist -f && git commit -m 'build: update production build' && git push origin main",
     "test": "vitest",
     "test:e2e": "playwright test",

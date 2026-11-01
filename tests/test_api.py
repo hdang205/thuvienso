@@ -142,12 +142,48 @@ class TestLoanAPI:
         response = client.post('/api/loans/borrow/', data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_loan_return(self, authenticated_client):
-        """Test loan return"""
+    def test_loan_return(self, authenticated_client, book_factory):
+        """Test loan return endpoint"""
         client, user = authenticated_client
-        # Get user's first loan
-        response = client.get('/api/loans/my_loans/')
+        book = book_factory.create(available_quantity=2)
+        initial_available = book.available_quantity
+
+        loan = Loan.objects.create(
+            user=user,
+            book=book,
+            due_date=timezone.now() + timedelta(days=14)
+        )
+        book.refresh_from_db()
+        assert book.available_quantity == initial_available - 1
+
+        response = client.post(f'/api/loans/{loan.id}/return_book/')
         assert response.status_code == status.HTTP_200_OK
+        loan.refresh_from_db()
+        assert loan.status == 'returned'
+        assert loan.return_date is not None
+
+        book.refresh_from_db()
+        assert book.available_quantity == initial_available
+
+    def test_loan_inventory_consistency(self, authenticated_client, book_factory):
+        """Verify borrowing decrements exactly 1 and return increments exactly 1"""
+        client, user = authenticated_client
+        book = book_factory.create(total_quantity=5, available_quantity=5)
+
+        # Borrow
+        response = client.post('/api/loans/borrow/', {'book_id': book.id})
+        assert response.status_code == status.HTTP_201_CREATED
+        loan_id = response.data['id']
+
+        book.refresh_from_db()
+        assert book.available_quantity == 4
+
+        # Return
+        return_resp = client.post(f'/api/loans/{loan_id}/return_book/')
+        assert return_resp.status_code == status.HTTP_200_OK
+
+        book.refresh_from_db()
+        assert book.available_quantity == 5
 
     def test_my_loans(self, authenticated_client, book_factory):
         """Test getting user's own loans"""
@@ -253,3 +289,39 @@ class TestChatAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['suggestions'] == []
         assert 'couldn\'t find' in response.data['message'].lower()
+
+
+@pytest.mark.django_db
+class TestAuthExtendedAPI:
+    def test_me_view(self, authenticated_client):
+        """Test getting current user profile"""
+        client, user = authenticated_client
+        response = client.get('/api/auth/me/')
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['username'] == user.username
+
+    def test_profile_update(self, authenticated_client):
+        """Test updating profile via PUT"""
+        client, user = authenticated_client
+        response = client.put('/api/auth/profile/', {'first_name': 'UpdatedFirst', 'last_name': 'UpdatedLast'})
+        assert response.status_code == status.HTTP_200_OK
+        user.refresh_from_db()
+        assert user.first_name == 'UpdatedFirst'
+
+    def test_logout(self, authenticated_client):
+        """Test logout with token blacklisting"""
+        client, user = authenticated_client
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+        response = client.post('/api/auth/logout/', {'refresh': str(refresh)})
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_book_action_borrow(self, authenticated_client, book_factory):
+        """Test borrowing via /api/books/{id}/borrow/"""
+        client, user = authenticated_client
+        book = book_factory.create(available_quantity=3)
+        due = (timezone.now() + timedelta(days=7)).isoformat()
+        response = client.post(f'/api/books/{book.id}/borrow/', {'user_id': user.id, 'due_date': due})
+        assert response.status_code == status.HTTP_201_CREATED
+        book.refresh_from_db()
+        assert book.available_quantity == 2

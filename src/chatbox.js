@@ -33,8 +33,8 @@ class ChatBox {
         <!-- Chat window -->
         <div class="chatbox-window" id="chatbox-window" style="display: none;">
           <div class="chatbox-header">
-            <h3>Book Recommendations</h3>
-            <button class="chatbox-close" id="chatbox-close" title="Close">
+            <h3>Trợ lý gợi ý sách FBU</h3>
+            <button class="chatbox-close" id="chatbox-close" title="Đóng">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -48,10 +48,10 @@ class ChatBox {
             <input 
               type="text" 
               id="chatbox-input" 
-              placeholder="What book are you looking for?" 
+              placeholder="Nhập tên sách hoặc chủ đề bạn tìm kiếm..." 
               autocomplete="off"
             />
-            <button id="chatbox-send" title="Send">
+            <button id="chatbox-send" title="Gửi">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -89,7 +89,7 @@ class ChatBox {
     // Show initial greeting
     if (this.messages.length === 0) {
       this.addBotMessage(
-        '👋 Hi! I can help you find books. Try asking: "books about science" or "fiction novels"'
+        '👋 Xin chào! Tôi là trợ lý gợi ý sách FBU. Bạn có thể hỏi: "sách học lập trình python", "cấu trúc dữ liệu", "kinh tế"...'
       );
     }
   }
@@ -430,10 +430,15 @@ class ChatBox {
       this.displayBotResponse(response);
     } catch (error) {
       this.removeLoadingIndicator();
-      this.addBotMessage(
-        'Sorry, I encountered an error. Please try again later.'
-      );
-      console.error('Chat error:', error);
+      if (error && error.message === 'Not authenticated') {
+        this.addBotMessage(
+          '🔒 Vui lòng đăng nhập vào hệ thống để sử dụng tính năng gợi ý sách thông minh!'
+        );
+      } else {
+        this.addBotMessage(
+          'Rất tiếc, đã có lỗi khi tìm kiếm gợi ý sách. Vui lòng thử lại sau.'
+        );
+      }
     }
   }
 
@@ -623,8 +628,7 @@ class ChatBox {
     if (stored) {
       try {
         this.messages = JSON.parse(stored);
-      } catch (e) {
-        console.error('Failed to load chat history:', e);
+      } catch {
         this.messages = [];
       }
     }

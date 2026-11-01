@@ -3,58 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thư viện số FBU</title>
+    <title>Thư viện số FBU - Quản lý thư viện số hóa</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div id="toast-container" class="toast-container"></div>
+
     <header>
-      <h1>Thư viện số FBU</h1>
+      <div class="brand">
+        <span class="brand-icon">📚</span>
+        <div>
+          <h1>Thư viện số FBU</h1>
+          <small style="opacity: 0.85;">Hệ thống tra cứu & quản lý mượn trả sách</small>
+        </div>
+      </div>
       <nav id="main-nav">
+        <div id="nav-links" style="display: none">
+          <a href="#books" class="nav-link active" data-tab="books">Sách</a>
+          <a href="#loans" class="nav-link" data-tab="loans">Mượn trả</a>
+          <a href="#users" class="nav-link" data-tab="users" id="users-nav-link">Người dùng</a>
+        </div>
         <div id="auth-section">
           <span id="user-info"></span>
-          <button id="login-btn">Đăng nhập</button>
-          <button id="register-btn">Đăng ký</button>
-          <button id="logout-btn" style="display: none">Đăng xuất</button>
-        </div>
-        <div id="nav-links" style="display: none">
-          <a href="#books">Sách</a>
-          <a href="#users">Người dùng</a>
-          <a href="#loans">Mượn trả</a>
+          <button id="login-btn" class="btn btn-secondary">Đăng nhập</button>
+          <button id="register-btn" class="btn btn-secondary">Đăng ký</button>
+          <button id="logout-btn" class="btn btn-danger" style="display: none">Đăng xuất</button>
         </div>
       </nav>
     </header>
 
     <main>
-      <section id="auth-forms" style="display: none">
+      <section id="auth-forms" class="auth-box" style="display: none">
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" id="tab-login-btn">Đăng nhập</button>
+          <button type="button" class="auth-tab" id="tab-reg-btn">Đăng ký</button>
+        </div>
+
         <div id="login-form-container">
-          <h2>Đăng nhập</h2>
           <form id="login-form">
             <label for="login-username">Tên đăng nhập:</label>
-            <input type="text" id="login-username" required />
+            <input type="text" id="login-username" required autocomplete="username" />
 
             <label for="login-password">Mật khẩu:</label>
-            <input type="password" id="login-password" required />
+            <input type="password" id="login-password" required autocomplete="current-password" />
 
-            <button type="submit">Đăng nhập</button>
+            <button type="submit" class="btn btn-primary">Đăng nhập</button>
           </form>
         </div>
 
         <div id="register-form-container" style="display: none">
-          <h2>Đăng ký</h2>
           <form id="register-form">
             <label for="reg-username">Tên đăng nhập:</label>
-            <input type="text" id="reg-username" required />
+            <input type="text" id="reg-username" required autocomplete="username" />
 
             <label for="reg-email">Email:</label>
-            <input type="email" id="reg-email" required />
+            <input type="email" id="reg-email" required autocomplete="email" />
 
             <label for="reg-password">Mật khẩu:</label>
-            <input type="password" id="reg-password" required />
+            <input type="password" id="reg-password" required autocomplete="new-password" />
 
             <label for="reg-password-confirm">Xác nhận mật khẩu:</label>
-            <input type="password" id="reg-password-confirm" required />
+            <input type="password" id="reg-password-confirm" required autocomplete="new-password" />
 
-            <label for="reg-first-name">Họ:</label>
+            <label for="reg-first-name">Họ & tên đệm:</label>
             <input type="text" id="reg-first-name" required />
 
             <label for="reg-last-name">Tên:</label>
@@ -66,26 +77,39 @@
               <option value="librarian">Thủ thư</option>
             </select>
 
-            <button type="submit">Đăng ký</button>
+            <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
           </form>
         </div>
       </section>
 
       <section id="books" style="display: none">
-        <h2>Quản lý sách</h2>
-        <div id="books-list"></div>
-        <button id="add-book-btn">Thêm sách</button>
-      </section>
+        <div class="section-header">
+          <h2>Kho sách thư viện</h2>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="borrow-book-btn" class="btn btn-success">Mượn sách</button>
+            <button id="add-book-btn" class="btn btn-primary" style="display: none">+ Thêm sách</button>
+          </div>
+        </div>
 
-      <section id="users" style="display: none">
-        <h2>Quản lý người dùng</h2>
-        <div id="users-list"></div>
+        <div class="search-container">
+          <input type="text" id="search-books" placeholder="Tìm kiếm sách theo tiêu đề, tác giả, thể loại..." autocomplete="off" />
+        </div>
+
+        <div id="books-list"></div>
       </section>
 
       <section id="loans" style="display: none">
-        <h2>Mượn trả sách</h2>
+        <div class="section-header">
+          <h2 id="loans-title">Danh sách mượn trả</h2>
+        </div>
         <div id="loans-list"></div>
-        <button id="borrow-book-btn">Mượn sách</button>
+      </section>
+
+      <section id="users" style="display: none">
+        <div class="section-header">
+          <h2>Quản lý người dùng</h2>
+        </div>
+        <div id="users-list"></div>
       </section>
     </main>
 

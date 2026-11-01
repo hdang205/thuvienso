@@ -55,15 +55,22 @@ class Loan(models.Model):
     def save(self, *args, **kwargs):
         # Update book availability when loan status changes
         if self.pk:  # Existing loan
-            old_loan = Loan.objects.get(pk=self.pk)
-            if old_loan.status != self.status:
-                if self.status == 'returned' and old_loan.status == 'borrowed':
-                    self.book.available_quantity += 1
-                elif self.status == 'borrowed' and old_loan.status == 'returned':
-                    self.book.available_quantity -= 1
+            try:
+                old_loan = Loan.objects.get(pk=self.pk)
+                if old_loan.status != self.status:
+                    if self.status == 'returned' and old_loan.status in ['borrowed', 'overdue']:
+                        self.book.available_quantity += 1
+                        self.book.save()
+                    elif self.status in ['borrowed', 'overdue'] and old_loan.status == 'returned':
+                        if self.book.available_quantity > 0:
+                            self.book.available_quantity -= 1
+                            self.book.save()
+            except Loan.DoesNotExist:
+                pass
         else:  # New loan
             if self.status == 'borrowed':
-                self.book.available_quantity -= 1
+                if self.book.available_quantity > 0:
+                    self.book.available_quantity -= 1
+                    self.book.save()
 
-        self.book.save()
         super().save(*args, **kwargs)

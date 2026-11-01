@@ -16,13 +16,15 @@ const CONFIG = {
 
 // Get current environment from URL or default to production
 function getEnvironment() {
-  const hostname = window.location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'development';
-  }
-  // Add your staging domain here if needed
-  if (hostname.includes('staging')) {
-    return 'staging';
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'development';
+    }
+    // Add your staging domain here if needed
+    if (hostname.includes('staging')) {
+      return 'staging';
+    }
   }
   return 'production';
 }
